@@ -1,7 +1,7 @@
 function App() {
   return (
     <div>
-      <h1>Task Manager</h1>
+      <h1 className="bg-red-500">Task Manager</h1>
     </div>
   );
 }
