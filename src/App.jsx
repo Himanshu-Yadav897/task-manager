@@ -1,8 +1,26 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import { useAuth } from './contexts/AuthContext';
+
 function App() {
+  const { currentUser } = useAuth();
+
   return (
-    <div>
-      <h1 className="bg-red-500">Task Manager</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={currentUser ? <Navigate to="/dashboard" /> : <LoginPage />}
+        />
+        <Route
+          path="/dashboard"
+          element={currentUser ? <DashboardPage /> : <Navigate to="/login" />}
+        />
+        {/* You can add routes like /tasks/:id or /register later */}
+        <Route path="*" element={<Navigate to={currentUser ? "/dashboard" : "/login"} />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

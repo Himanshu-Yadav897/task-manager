@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useContext, useEffect } from 'react';
-import taskService from '../services/taskService';
+import * as taskService from '../services/taskService';
 
 const initialState = {
   tasks: [],
