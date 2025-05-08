@@ -14,7 +14,7 @@ export default function EditTaskPage() {
     priority: 'low'
   });
 
-  // Populate form when tasks load
+  // Populate form when tasks are loaded
   useEffect(() => {
     const task = tasks.find(t => t._id === id);
     if (task) {
@@ -22,19 +22,25 @@ export default function EditTaskPage() {
         title: task.title,
         description: task.description,
         dueDate: task.dueDate,
-        priority: task.priority
+        priority: task.priority || 'low'
       });
     }
   }, [id, tasks]);
 
   const handleChange = e => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    await updateTask(id, form);
-    navigate('/dashboard');
+    try {
+      await updateTask(id, form);
+      navigate('/dashboard');
+    } catch (err) {
+      alert('Failed to update task.');
+      console.error(err);
+    }
   };
 
   return (
@@ -49,6 +55,7 @@ export default function EditTaskPage() {
               name="title"
               value={form.title}
               onChange={handleChange}
+              required
               className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
@@ -59,6 +66,7 @@ export default function EditTaskPage() {
               name="dueDate"
               value={form.dueDate}
               onChange={handleChange}
+              required
               className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
@@ -94,7 +102,7 @@ export default function EditTaskPage() {
         {/* Save */}
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold p-3 rounded-xl shadow-md transition transform hover:-translate-y-0.5"
+          className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold p-3 rounded-xl shadow-md transition transform hover:-translate-y-0.5"
         >
           Save Changes
         </button>
@@ -102,5 +110,3 @@ export default function EditTaskPage() {
     </div>
   );
 }
-
-
