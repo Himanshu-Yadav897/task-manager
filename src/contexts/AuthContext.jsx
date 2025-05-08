@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
     dispatch({ type: ACTIONS.LOGIN_START });
     try {
       await authService.login({ email, password });
-      const res = await fetch('http://localhost:5000/auth/me', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('Failed to load user');
