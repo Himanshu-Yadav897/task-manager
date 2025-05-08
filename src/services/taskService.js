@@ -1,6 +1,7 @@
 // src/services/taskService.js
 
-const API_URL = 'http://localhost:5000/tasks';
+const API_URL = `${import.meta.env.VITE_API_URL}/tasks`;
+
 
 // GET all tasks for current user
 export async function getAll() {
