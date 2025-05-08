@@ -1,3 +1,4 @@
+//contexts/TaskContext.jsx
 import React, { createContext, useReducer, useContext, useEffect } from 'react';
 import * as taskService from '../services/taskService';
 
@@ -8,11 +9,12 @@ const initialState = {
 };
 
 const ACTIONS = {
-  FETCH_START:   'FETCH_START',
+  FETCH_START: 'FETCH_START',
   FETCH_SUCCESS: 'FETCH_SUCCESS',
-  FETCH_ERROR:   'FETCH_ERROR',
-  ADD_TASK:      'ADD_TASK',
-  // you can add UPDATE_TASK, DELETE_TASK here later
+  FETCH_ERROR: 'FETCH_ERROR',
+  ADD_TASK: 'ADD_TASK',
+  UPDATE_TASK: 'UPDATE_TASK',
+  DELETE_TASK: 'DELETE_TASK',
 };
 
 function taskReducer(state, action) {
@@ -25,6 +27,19 @@ function taskReducer(state, action) {
       return { ...state, status: 'failed', error: action.payload };
     case ACTIONS.ADD_TASK:
       return { ...state, tasks: [action.payload, ...state.tasks] };
+    case ACTIONS.UPDATE_TASK:
+      return {
+        ...state,
+        tasks: state.tasks.map(t =>
+          t._id === action.payload._id ? action.payload : t
+        )
+      };
+    case ACTIONS.DELETE_TASK:
+      return {
+        ...state,
+        tasks: state.tasks.filter(t => t._id !== action.payload)
+      };
+
     default:
       return state;
   }
@@ -54,8 +69,19 @@ export function TaskProvider({ children }) {
     dispatch({ type: ACTIONS.ADD_TASK, payload: newTask });
   };
 
+  const updateTask = async (_id, updates) => {
+    const updated = await taskService.update(_id, updates);
+    dispatch({ type: ACTIONS.UPDATE_TASK, payload: updated });
+  };
+
+
+  const deleteTask = async (_id) => {
+    await taskService.remove(_id);
+    dispatch({ type: ACTIONS.DELETE_TASK, payload: _id });
+  };
+
   return (
-    <TaskContext.Provider value={{ ...state, addTask }}>
+    <TaskContext.Provider value={{ ...state, addTask, deleteTask, updateTask }}>
       {children}
     </TaskContext.Provider>
   );

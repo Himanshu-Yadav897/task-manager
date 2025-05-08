@@ -1,42 +1,45 @@
-// Simulate network latency
-const delay = ms => new Promise(res => setTimeout(res, ms));
+// src/services/taskService.js
 
-// In-memory fake task DB
-let tasks = [
-  {
-    id: '1',
-    title: 'Finish assignment',
-    description: 'Complete the frontend task manager UI',
-    dueDate: '2025-05-10',
-    priority: 'high',
-    status: 'in-progress',
-    assigneeId: 'user-123',
-  },
-  {
-    id: '2',
-    title: 'Review PRs',
-    description: 'Go through pull requests from teammates',
-    dueDate: '2025-05-08',
-    priority: 'medium',
-    status: 'todo',
-    assigneeId: 'user-123',
-  },
-];
+const API_URL = 'http://localhost:5000/tasks';
 
-// GET all tasks
+// GET all tasks for current user
 export async function getAll() {
-  await delay(500);
-  return [...tasks]; // return a copy
+  const res = await fetch(API_URL, {
+    credentials: 'include', // ✅ send JWT cookie
+  });
+  if (!res.ok) throw new Error('Failed to fetch tasks');
+  return res.json();
 }
 
-// POST a new task
-export async function create(taskData) {
-  await delay(300);
-  const newTask = {
-    ...taskData,
-    id: String(Date.now()),
-    status: 'todo',
-  };
-  tasks.unshift(newTask);
-  return newTask;
+// POST new task
+export async function create(task) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // ✅ send JWT cookie
+    body: JSON.stringify(task),
+  });
+  if (!res.ok) throw new Error('Failed to create task');
+  return res.json();
+}
+
+// PUT update task
+export async function update(id, updatedTask) {
+  const res = await fetch(`${API_URL}/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // ✅ send JWT cookie
+    body: JSON.stringify(updatedTask),
+  });
+  if (!res.ok) throw new Error('Failed to update task');
+  return res.json();
+}
+
+// DELETE task
+export async function remove(id) {
+  const res = await fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+    credentials: 'include', // ✅ send JWT cookie
+  });
+  if (!res.ok) throw new Error('Failed to delete task');
 }

@@ -1,19 +1,20 @@
+//contexts/AuthContext.jsx
 import React, { createContext, useReducer, useContext } from 'react';
 import * as authService from '../services/authService';
 
 // Initial state
 const initialState = {
-  currentUser: null,
+  currentUser: JSON.parse(localStorage.getItem('user')) || null,
   status: 'idle',    // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
 };
 
 // Actions
 const ACTIONS = {
-  LOGIN_START:   'LOGIN_START',
+  LOGIN_START: 'LOGIN_START',
   LOGIN_SUCCESS: 'LOGIN_SUCCESS',
-  LOGIN_ERROR:   'LOGIN_ERROR',
-  LOGOUT:        'LOGOUT',
+  LOGIN_ERROR: 'LOGIN_ERROR',
+  LOGOUT: 'LOGOUT',
 };
 
 // Reducer
@@ -26,7 +27,7 @@ function authReducer(state, action) {
     case ACTIONS.LOGIN_ERROR:
       return { ...state, status: 'failed', error: action.payload };
     case ACTIONS.LOGOUT:
-      return { ...initialState };
+      return { ...state, currentUser: null, status: 'idle', error: null };
     default:
       return state;
   }
@@ -39,23 +40,42 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  const login = async (credentials) => {
+  const login = async ({ email, password }) => {
     dispatch({ type: ACTIONS.LOGIN_START });
     try {
-      const user = await authService.login(credentials);
+      await authService.login({ email, password });
+      const res = await fetch('http://localhost:5000/auth/me', {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to load user');
+      const user = await res.json();
+
+
+      localStorage.setItem('user', JSON.stringify(user));
       dispatch({ type: ACTIONS.LOGIN_SUCCESS, payload: user });
+
     } catch (err) {
       dispatch({ type: ACTIONS.LOGIN_ERROR, payload: err.message });
+      throw err;
     }
   };
 
   const logout = () => {
     authService.logout();
+    localStorage.removeItem('user');
     dispatch({ type: ACTIONS.LOGOUT });
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        currentUser: state.currentUser,
+        status: state.status,
+        error: state.error,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
